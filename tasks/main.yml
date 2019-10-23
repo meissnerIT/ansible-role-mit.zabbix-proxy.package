@@ -1,0 +1,46 @@
+---
+
+# KISS - Hardcoded jessie / amd64 as long as we deploy only on one host
+- set_fact: zabbix_version="4.0.2-1+jessie_amd64"
+- name: Add apt gpg key from zabbix.com
+  apt_key: id=A14FE591 url=http://repo.zabbix.com/zabbix-official-repo.key
+
+# Using apt with a deb downloads the deb everytime we call ansible
+- name: Downloading deb
+  get_url: 
+    url: http://repo.zabbix.com/zabbix/4.0/debian/pool/main/z/zabbix/zabbix-proxy-sqlite3_{{ zabbix_version }}.deb
+    dest: /var/cache/apt/archives/zabbix-proxy-sqlite3_{{ zabbix_version }}.deb
+
+- name: Installing deb
+  apt: deb=/var/cache/apt/archives/zabbix-proxy-sqlite3_{{ zabbix_version }}.deb
+
+- name: Create /etc/zabbix/zabbix_proxy.conf.d/
+  file: path=/etc/zabbix/zabbix_proxy.conf.d/ state=directory
+
+- name: Create /var/lib/zabbix/
+  file: path=/var/lib/zabbix/ state=directory owner=zabbix group=zabbix mode=750
+
+- name: Create /etc/zabbix/zabbix_proxy.psk (1/2)
+  shell: openssl rand -hex 32 > /etc/zabbix/zabbix_proxy.psk
+  args:
+    creates: /etc/zabbix/zabbix_proxy.psk
+  notify: Restart zabbix-proxy
+
+- name: Create /etc/zabbix/zabbix_proxy.psk (2/2)
+  file: path=/etc/zabbix/zabbix_proxy.psk owner=root group=zabbix mode=640
+
+- name: Ensure include of /etc/zabbix/zabbix_proxy.conf.d
+  lineinfile:
+    path: /etc/zabbix/zabbix_proxy.conf
+    line: 'Include=/etc/zabbix/zabbix_proxy.conf.d/*.conf'
+    insertafter: '^# Include=.*'
+  notify: Restart zabbix-proxy
+
+- name: Add zabbix-proxy configuration
+  template: src=local-monheim-zabbix_proxy.conf dest=/etc/zabbix/zabbix_proxy.conf.d/
+  notify: Restart zabbix-proxy
+
+# Ensure to use name.service and not only name
+- name: Ensure zabbix-proxy startup at system startup
+  service: name=zabbix-proxy.service state=started enabled=yes
+
