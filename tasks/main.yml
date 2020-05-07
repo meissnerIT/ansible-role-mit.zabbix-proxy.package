@@ -4,7 +4,7 @@
 # rm /var/lib/zabbix/zabbix_proxy.db
 
 # KISS - Hardcoded jessie / amd64 as long as we deploy only on one host
-- set_fact: zabbix_version="4.4.6-1+jessie_amd64"
+- set_fact: zabbix_version="4.4.8-1+jessie_amd64"
 - name: Add apt gpg key from zabbix.com
   apt_key: id=A14FE591 url=http://repo.zabbix.com/zabbix-official-repo.key
 
