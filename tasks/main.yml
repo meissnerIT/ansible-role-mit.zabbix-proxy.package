@@ -6,7 +6,9 @@
 - set_fact:
     zabbix_proxy_major_version: "{{ zabbix_proxy_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
 - set_fact:
-    zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+{{ ansible_distribution_release }}_amd64.deb"
+    #zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+{{ ansible_distribution_release }}_amd64.deb"
+    # Zabbix version >=6: buster -> debian10
+    zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+debian{{ ansible_distribution_version }}_amd64.deb"
 
 - name: "Add apt gpg key for repo.zabbix.com"
   copy: src=zabbix-official-repo.gpg dest=/usr/share/keyrings/
