@@ -22,6 +22,8 @@
 
 - name: Installing deb
   apt: deb=/var/cache/apt/archives/{{ zabbix_proxy_package }}
+  # 2023-05-08, v6.4.2: No restart by debian package
+  notify: Restart zabbix-proxy
 
 - name: Create /etc/zabbix/zabbix_proxy.conf.d/
   file: path=/etc/zabbix/zabbix_proxy.conf.d/ state=directory
