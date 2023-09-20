@@ -6,13 +6,12 @@
 - set_fact:
     zabbix_proxy_major_version: "{{ zabbix_proxy_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
 - set_fact:
-    #todo: if / then / when
-    #zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+{{ ansible_distribution_release }}_amd64.deb"
-    # Zabbix version >=6: buster -> debian10
     zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+debian{{ ansible_distribution_major_version }}_amd64.deb"
 
 - name: "Add apt gpg key for repo.zabbix.com"
-  copy: src=zabbix-official-repo.gpg dest=/usr/share/keyrings/
+  copy:
+    src: zabbix-official-repo.gpg
+    dest: /usr/share/keyrings/
 
 # Using apt with a deb downloads the deb everytime we call ansible
 - name: Downloading deb
@@ -21,15 +20,23 @@
     dest: /var/cache/apt/archives/{{ zabbix_proxy_package }}
 
 - name: Installing deb
-  apt: deb=/var/cache/apt/archives/{{ zabbix_proxy_package }}
+  apt:
+    deb: /var/cache/apt/archives/{{ zabbix_proxy_package }}
   # 2023-05-08, v6.4.2: No restart by debian package
   notify: Restart zabbix-proxy
 
 - name: Create /etc/zabbix/zabbix_proxy.conf.d/
-  file: path=/etc/zabbix/zabbix_proxy.conf.d/ state=directory
+  file:
+    path: /etc/zabbix/zabbix_proxy.conf.d/
+    state: directory
 
 - name: Create /var/lib/zabbix/
-  file: path=/var/lib/zabbix/ state=directory owner=zabbix group=zabbix mode=750
+  file:
+    path: /var/lib/zabbix/
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: 0750
 
 - name: Create /etc/zabbix/zabbix_proxy.psk (1/2)
   shell: openssl rand -hex 32 > /etc/zabbix/zabbix_proxy.psk
@@ -38,7 +45,11 @@
   notify: Restart zabbix-proxy
 
 - name: Create /etc/zabbix/zabbix_proxy.psk (2/2)
-  file: path=/etc/zabbix/zabbix_proxy.psk owner=root group=zabbix mode=640
+  file:
+    path: /etc/zabbix/zabbix_proxy.psk
+    owner: root
+    group: zabbix
+    mode: 0640
 
 - name: Ensure include of /etc/zabbix/zabbix_proxy.conf.d
   lineinfile:
@@ -48,10 +59,21 @@
   notify: Restart zabbix-proxy
 
 - name: Add zabbix-proxy configuration
-  template: src={{ zabbix_proxy_conf }} dest=/etc/zabbix/zabbix_proxy.conf.d/
+  template:
+    src: "{{ zabbix_proxy_conf }}"
+    dest: /etc/zabbix/zabbix_proxy.conf.d/local-zabbix_proxy.conf
+  notify: Restart zabbix-proxy
+
+- name: Remove deprecated /etc/zabbix/zabbix_proxy.conf.d/{{ zabbix_proxy_conf }}
+  file:
+    path: /etc/zabbix/zabbix_proxy.conf.d/{{ zabbix_proxy_conf }}
+    state: absent
   notify: Restart zabbix-proxy
 
 # Ensure to use name.service and not only name
 - name: Ensure zabbix-proxy startup at system startup
-  service: name=zabbix-proxy.service state=started enabled=yes
+  service:
+    name: zabbix-proxy.service
+    state: started
+    enabled: yes
 
