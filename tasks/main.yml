@@ -1,79 +1,64 @@
 ---
 
 # Upgrade of sqlite database is not possible - just remove it
-# rm /var/lib/zabbix/zabbix_proxy.db
 
-- set_fact:
-    zabbix_proxy_major_version: "{{ zabbix_proxy_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
-- set_fact:
-    zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+debian{{ ansible_distribution_major_version }}_amd64.deb"
+- name: Include ansible_system-ansible_distribution.yml / ansible_system.yml
+  ansible.builtin.include_tasks: "{{ tasks_file }}"
+  vars:
+    tasks_file: "{{ lookup('ansible.builtin.first_found', files, errors='ignore') }}"
+    files:
+      - "{{ ansible_system }}-{{ ansible_distribution }}.yml"  # Linux-Debian.yml
+      - "{{ ansible_system }}.yml"  # FreeBSD.yml
 
-- name: "Add apt gpg key for repo.zabbix.com"
-  copy:
-    src: zabbix-official-repo.gpg
-    dest: /usr/share/keyrings/
-
-# Using apt with a deb downloads the deb everytime we call ansible
-- name: Downloading deb
-  get_url: 
-    url: http://repo.zabbix.com/zabbix/{{ zabbix_proxy_major_version }}/debian/pool/main/z/zabbix/{{ zabbix_proxy_package }}
-    dest: /var/cache/apt/archives/{{ zabbix_proxy_package }}
-
-- name: Installing deb
-  apt:
-    deb: /var/cache/apt/archives/{{ zabbix_proxy_package }}
-  # 2023-05-08, v6.4.2: No restart by debian package
-  notify: Restart zabbix-proxy
-
-- name: Create /etc/zabbix/zabbix_proxy.conf.d/
+- name: Create {{ zabbix_proxy_confd_dir }}
   file:
-    path: /etc/zabbix/zabbix_proxy.conf.d/
+    path: "{{ zabbix_proxy_confd_dir }}"
     state: directory
 
-- name: Create /var/lib/zabbix/
+- name: Create {{ zabbix_proxy_db_dir }}
   file:
-    path: /var/lib/zabbix/
+    path: "{{ zabbix_proxy_db_dir }}"
     state: directory
     owner: zabbix
     group: zabbix
     mode: 0750
 
-- name: Create /etc/zabbix/zabbix_proxy.psk (1/2)
-  shell: openssl rand -hex 32 > /etc/zabbix/zabbix_proxy.psk
+- name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (1/2)
+  shell: openssl rand -hex 32 > {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk
   args:
-    creates: /etc/zabbix/zabbix_proxy.psk
+    creates: "{{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk"
   notify: Restart zabbix-proxy
 
-- name: Create /etc/zabbix/zabbix_proxy.psk (2/2)
+- name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (2/2)
   file:
-    path: /etc/zabbix/zabbix_proxy.psk
+    path: "{{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk"
     owner: root
     group: zabbix
     mode: 0640
 
-- name: Ensure include of /etc/zabbix/zabbix_proxy.conf.d
+- name: Ensure include of {{ zabbix_proxy_confd_dir }}
   lineinfile:
-    path: /etc/zabbix/zabbix_proxy.conf
-    line: 'Include=/etc/zabbix/zabbix_proxy.conf.d/*.conf'
+    path: "{{ zabbix_proxy_conf_file }}"
+    line: 'Include={{ zabbix_proxy_confd_dir }}/*.conf'
     insertafter: '^# Include=.*'
   notify: Restart zabbix-proxy
 
 - name: Add zabbix-proxy configuration
   template:
     src: "{{ zabbix_proxy_conf }}"
-    dest: /etc/zabbix/zabbix_proxy.conf.d/local-zabbix_proxy.conf
+    dest: "{{ zabbix_proxy_confd_dir }}/local-zabbix_proxy.conf"
   notify: Restart zabbix-proxy
 
-- name: Remove deprecated /etc/zabbix/zabbix_proxy.conf.d/{{ zabbix_proxy_conf }}
+- name: Remove deprecated {{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }}
   file:
-    path: /etc/zabbix/zabbix_proxy.conf.d/{{ zabbix_proxy_conf }}
+    path: "{{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }}"
     state: absent
   notify: Restart zabbix-proxy
 
 # Ensure to use name.service and not only name
 - name: Ensure zabbix-proxy startup at system startup
   service:
-    name: zabbix-proxy.service
+    name: "{{ zabbix_proxy_service_name }}"
     state: started
     enabled: yes
 

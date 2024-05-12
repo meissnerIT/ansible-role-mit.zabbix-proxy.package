@@ -1,0 +1,19 @@
+---
+
+# Upgrade of sqlite database is not possible - just remove it
+# rm /usr/local/share/zabbix64/proxy/database/zabbix_proxy.db
+
+- set_fact:
+    zabbix_proxy_major_version: "{{ zabbix_proxy_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
+- set_fact:
+    zabbix_proxy_db_dir: /var/db/zabbix
+    zabbix_proxy_conf_dir2: /usr/local/etc/zabbix64
+    zabbix_proxy_confd_dir: /usr/local/etc/zabbix64/zabbix_proxy.conf.d
+    zabbix_proxy_conf_file: /usr/local/etc/zabbix64/zabbix_proxy.conf
+    zabbix_proxy_service_name: zabbix_proxy
+
+- name: Install zabbix-proxy
+  package:
+    name: zabbix64-proxy-{{ zabbix_proxy_version }}
+  notify: Restart zabbix-proxy
+
