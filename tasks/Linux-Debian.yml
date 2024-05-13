@@ -10,7 +10,7 @@
     zabbix_proxy_conf_dir2: /etc/zabbix
     zabbix_proxy_confd_dir: /etc/zabbix/zabbix_proxy.conf.d
     zabbix_proxy_conf_file: /etc/zabbix/zabbix_proxy.conf
-    zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}-1+debian{{ ansible_distribution_major_version }}_amd64.deb"
+    zabbix_proxy_package: "zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}+debian{{ ansible_distribution_major_version }}_amd64.deb"
     # Ensure to use name.service and not only name
     zabbix_proxy_service_name: zabbix-proxy.service
 
