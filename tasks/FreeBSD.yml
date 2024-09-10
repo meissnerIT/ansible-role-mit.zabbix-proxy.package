@@ -1,5 +1,11 @@
 ---
 
+# zabbix64-proxy from offical repos only supports MySQL:
+#
+#  30432:20240729:154101.802 [Z3001] connection to database '/var/db/zabbix/zabbix_proxy.db' failed: [2002] Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
+#
+# For sqlite use own package at pkg.in.meissner.it!
+#
 # Upgrade of sqlite database is not possible - just remove it
 # rm /usr/local/share/zabbix64/proxy/database/zabbix_proxy.db
 
@@ -14,6 +20,6 @@
 
 - name: Install zabbix-proxy
   package:
-    name: zabbix64-proxy-{{ zabbix_proxy_version }}
+    name: zabbix64-proxy
   notify: Restart zabbix-proxy
 
