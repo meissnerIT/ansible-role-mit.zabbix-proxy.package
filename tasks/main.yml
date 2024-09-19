@@ -1,5 +1,4 @@
 ---
-
 # Upgrade of sqlite database is not possible - just remove it
 
 - name: Include ansible_system-ansible_distribution.yml / ansible_system.yml
@@ -7,58 +6,57 @@
   vars:
     tasks_file: "{{ lookup('ansible.builtin.first_found', files, errors='ignore') }}"
     files:
-      - "{{ ansible_system }}-{{ ansible_distribution }}.yml"  # Linux-Debian.yml
-      - "{{ ansible_system }}.yml"  # FreeBSD.yml
+      - "{{ ansible_system }}-{{ ansible_distribution }}.yml" # Linux-Debian.yml
+      - "{{ ansible_system }}.yml" # FreeBSD.yml
 
 - name: Create {{ zabbix_proxy_confd_dir }}
-  file:
+  ansible.builtin.file:
     path: "{{ zabbix_proxy_confd_dir }}"
     state: directory
 
 - name: Create {{ zabbix_proxy_db_dir }}
-  file:
+  ansible.builtin.file:
     path: "{{ zabbix_proxy_db_dir }}"
     state: directory
     owner: zabbix
     group: zabbix
-    mode: 0750
+    mode: "0750"
 
 - name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (1/2)
-  shell: openssl rand -hex 32 > {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk
+  ansible.builtin.shell: openssl rand -hex 32 > {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk
   args:
     creates: "{{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk"
   notify: Restart zabbix-proxy
 
 - name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (2/2)
-  file:
+  ansible.builtin.file:
     path: "{{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk"
     owner: root
     group: zabbix
-    mode: 0640
+    mode: "0640"
 
 - name: Ensure include of {{ zabbix_proxy_confd_dir }}
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ zabbix_proxy_conf_file }}"
-    line: 'Include={{ zabbix_proxy_confd_dir }}/*.conf'
-    insertafter: '^# Include=.*'
+    line: Include={{ zabbix_proxy_confd_dir }}/*.conf
+    insertafter: ^# Include=.*
   notify: Restart zabbix-proxy
 
 - name: Add zabbix-proxy configuration
-  template:
+  ansible.builtin.template:
     src: "{{ zabbix_proxy_conf }}"
     dest: "{{ zabbix_proxy_confd_dir }}/local-zabbix_proxy.conf"
   notify: Restart zabbix-proxy
 
 - name: Remove deprecated {{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }}
-  file:
+  ansible.builtin.file:
     path: "{{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }}"
     state: absent
   notify: Restart zabbix-proxy
 
 # Ensure to use name.service and not only name
 - name: Ensure zabbix-proxy startup at system startup
-  service:
+  ansible.builtin.service:
     name: "{{ zabbix_proxy_service_name }}"
     state: started
-    enabled: yes
-
+    enabled: true

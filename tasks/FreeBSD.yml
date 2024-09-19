@@ -1,5 +1,4 @@
 ---
-
 # zabbix64-proxy from offical repos only supports MySQL:
 #
 #  30432:20240729:154101.802 [Z3001] connection to database '/var/db/zabbix/zabbix_proxy.db' failed: [2002] Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
@@ -7,19 +6,18 @@
 # For sqlite use own package at pkg.in.meissner.it!
 #
 # Upgrade of sqlite database is not possible - just remove it
-# rm /usr/local/share/zabbix64/proxy/database/zabbix_proxy.db
+# rm /var/db/zabbix/zabbix_proxy.db
 
-- set_fact:
-    zabbix_proxy_major_version: "{{ zabbix_proxy_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
-- set_fact:
+# zabbix_proxy_pkg_name_prefix will be set in mit.zabbix-server.common
+
+- ansible.builtin.set_fact:
     zabbix_proxy_db_dir: /var/db/zabbix
-    zabbix_proxy_conf_dir2: /usr/local/etc/zabbix64
-    zabbix_proxy_confd_dir: /usr/local/etc/zabbix64/zabbix_proxy.conf.d
-    zabbix_proxy_conf_file: /usr/local/etc/zabbix64/zabbix_proxy.conf
+    zabbix_proxy_conf_dir2: /usr/local/etc/{{ zabbix_proxy_pkg_name_prefix }}
+    zabbix_proxy_confd_dir: /usr/local/etc/{{ zabbix_proxy_pkg_name_prefix }}/zabbix_proxy.conf.d
+    zabbix_proxy_conf_file: /usr/local/etc/{{ zabbix_proxy_pkg_name_prefix }}/zabbix_proxy.conf
     zabbix_proxy_service_name: zabbix_proxy
 
 - name: Install zabbix-proxy
-  package:
-    name: zabbix64-proxy
+  ansible.builtin.package:
+    name: "{{ zabbix_proxy_pkg_name_prefix }}-proxy"
   notify: Restart zabbix-proxy
-

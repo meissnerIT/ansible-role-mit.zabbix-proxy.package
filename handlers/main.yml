@@ -3,7 +3,7 @@
 # See http://docs.ansible.com/playbooks_intro.html for more information about handlers.
 
 - name: Restart zabbix-proxy
-  service:
+  ansible.builtin.service:
     name: "{{ zabbix_proxy_servce }}"
     state: restarted
-
+  listen: apt-package-has-been-changed
