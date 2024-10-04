@@ -4,6 +4,6 @@
 
 - name: Restart zabbix-proxy
   ansible.builtin.service:
-    name: "{{ zabbix_proxy_servce }}"
+    name: "{{ zabbix_proxy_service }}"
     state: restarted
   listen: apt-package-has-been-changed

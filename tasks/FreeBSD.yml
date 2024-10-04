@@ -8,16 +8,16 @@
 # Upgrade of sqlite database is not possible - just remove it
 # rm /var/db/zabbix/zabbix_proxy.db
 
-# zabbix_proxy_pkg_name_prefix will be set in mit.zabbix-server.common
+# zabbix_server_pkg_name_prefix will be set in mit.zabbix-server.common
 
 - ansible.builtin.set_fact:
     zabbix_proxy_db_dir: /var/db/zabbix
-    zabbix_proxy_conf_dir2: /usr/local/etc/{{ zabbix_proxy_pkg_name_prefix }}
-    zabbix_proxy_confd_dir: /usr/local/etc/{{ zabbix_proxy_pkg_name_prefix }}/zabbix_proxy.conf.d
-    zabbix_proxy_conf_file: /usr/local/etc/{{ zabbix_proxy_pkg_name_prefix }}/zabbix_proxy.conf
+    zabbix_proxy_conf_dir2: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}
+    zabbix_proxy_confd_dir: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}/zabbix_proxy.conf.d
+    zabbix_proxy_conf_file: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}/zabbix_proxy.conf
     zabbix_proxy_service_name: zabbix_proxy
 
 - name: Install zabbix-proxy
   ansible.builtin.package:
-    name: "{{ zabbix_proxy_pkg_name_prefix }}-proxy"
+    name: "{{ zabbix_server_pkg_name_prefix }}-proxy"
   notify: Restart zabbix-proxy
