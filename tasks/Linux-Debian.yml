@@ -3,13 +3,13 @@
 # rm /var/lib/zabbix/zabbix_proxy.db
 
 - ansible.builtin.set_fact:
-    zabbix_proxy_major_version: "{{ zabbix_proxy_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
+    zabbix_server_major_version: "{{ zabbix_server_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
 - ansible.builtin.set_fact:
     zabbix_proxy_db_dir: /var/lib/zabbix
     zabbix_proxy_conf_dir2: /etc/zabbix
     zabbix_proxy_confd_dir: /etc/zabbix/zabbix_proxy.conf.d
     zabbix_proxy_conf_file: /etc/zabbix/zabbix_proxy.conf
-    zabbix_proxy_package: zabbix-proxy-sqlite3_{{ zabbix_proxy_version }}+debian{{ ansible_distribution_major_version }}_amd64.deb
+    zabbix_proxy_package: zabbix-proxy-sqlite3_{{ zabbix_server_version }}+debian{{ ansible_distribution_major_version }}_amd64.deb
     # Ensure to use name.service and not only name
     zabbix_proxy_service_name: zabbix-proxy.service
 

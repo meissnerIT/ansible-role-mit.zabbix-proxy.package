@@ -12,9 +12,9 @@
 - ansible.builtin.set_fact:
     local_apt_key: "{{ apt_keyrings }}/{{ visible_name }}.gpg"
 - ansible.builtin.set_fact:
-    apt_package: zabbix-proxy-sqlite3=1:{{ zabbix_proxy_version }}
+    apt_package: zabbix-proxy-sqlite3=1:{{ zabbix_server_version }}
     apt_source_list_name: local-{{ visible_name }}.list
-    apt_repository: deb [signed-by={{ local_apt_key }}] https://repo.zabbix.com/zabbix/{{ zabbix_proxy_major_version }}/debian {{ ansible_distribution_release }}
+    apt_repository: deb [signed-by={{ local_apt_key }}] https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/debian {{ ansible_distribution_release }}
       main
     gpg_key_src: https://repo.zabbix.com/zabbix-official-repo.key
 
