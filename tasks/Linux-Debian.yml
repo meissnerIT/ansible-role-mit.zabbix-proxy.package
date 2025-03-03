@@ -2,8 +2,9 @@
 # Upgrade of sqlite database is not possible - just remove it
 # rm /var/lib/zabbix/zabbix_proxy.db
 
-- name: Set zabbix_server_major_version
+- name: Set defaults
   ansible.builtin.set_fact:
+    zabbix_distribution_release: "{{ 'ubuntu' + ansible_lsb.release if (ansible_distribution == 'Ubuntu') else ansible_distribution_release }}"
     zabbix_server_major_version: "{{ zabbix_server_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
 - name: Set defaults
   ansible.builtin.set_fact:
@@ -11,7 +12,7 @@
     zabbix_proxy_conf_dir2: /etc/zabbix
     zabbix_proxy_confd_dir: /etc/zabbix/zabbix_proxy.conf.d
     zabbix_proxy_conf_file: /etc/zabbix/zabbix_proxy.conf
-    zabbix_proxy_package: zabbix-proxy-sqlite3_{{ zabbix_server_version }}+debian{{ ansible_distribution_major_version }}_amd64.deb
+    zabbix_proxy_package: zabbix-proxy-sqlite3_{{ zabbix_server_version }}+{{ zabbix_distribution_release }}{{ ansible_distribution_major_version }}_amd64.deb
     # Ensure to use name.service and not only name
     zabbix_proxy_service_name: zabbix-proxy.service
 
@@ -20,5 +21,5 @@
     path: /usr/share/keyrings/zabbix-official-repo.gpg
     state: absent
 
-- name: Install
+- name: Include install.yml
   ansible.builtin.include_tasks: install.yml
