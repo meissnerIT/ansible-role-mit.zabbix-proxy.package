@@ -13,6 +13,7 @@
   ansible.builtin.file:
     path: "{{ zabbix_proxy_confd_dir }}"
     state: directory
+    mode: "755"
 
 - name: Create {{ zabbix_proxy_db_dir }}
   ansible.builtin.file:
@@ -22,13 +23,13 @@
     group: zabbix
     mode: "0750"
 
-- name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (1/2)
+- name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (1/2) # noqa: name[template]
   ansible.builtin.shell: openssl rand -hex 32 > {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk
   args:
     creates: "{{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk"
   notify: Restart zabbix-proxy
 
-- name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (2/2)
+- name: Create {{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk (2/2) # noqa: name[template]
   ansible.builtin.file:
     path: "{{ zabbix_proxy_conf_dir2 }}/zabbix_proxy.psk"
     owner: root
@@ -46,9 +47,10 @@
   ansible.builtin.template:
     src: "{{ zabbix_proxy_conf }}"
     dest: "{{ zabbix_proxy_confd_dir }}/local-zabbix_proxy.conf"
+    mode: "644"
   notify: Restart zabbix-proxy
 
-- name: Remove deprecated {{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }}
+- name: Remove deprecated {{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }} # noqa: name[template]
   ansible.builtin.file:
     path: "{{ zabbix_proxy_confd_dir }}/{{ zabbix_proxy_conf }}"
     state: absent

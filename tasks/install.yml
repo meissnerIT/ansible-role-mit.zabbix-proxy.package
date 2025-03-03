@@ -4,6 +4,7 @@
 # 2024-09-18: Cosmetic updates (ansible-lint)
 # 2024-09-19: Added handler "apt-package-has-been-changed"
 # 2025-01-11: Cosmetic updates (Removed ansible-lint warnings)
+# 2025-01-23: Added executable to "Add apt gpg key"
 
 - name: Set defaults
   ansible.builtin.set_fact:
@@ -17,8 +18,9 @@
   ansible.builtin.set_fact:
     apt_package: zabbix-proxy-sqlite3=1:{{ zabbix_server_version }}
     apt_source_list_name: local-{{ visible_name }}.list
-    apt_repository: deb [signed-by={{ local_apt_key }}]\
-                    https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/debian {{ ansible_distribution_release }} main
+    apt_repository: >
+      deb [signed-by={{ local_apt_key }}]
+      https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/stable/debian {{ ansible_distribution_release }} main
     gpg_key_src: https://repo.zabbix.com/zabbix-official-repo.key
 
 # No need to change anything beyond this line
@@ -27,7 +29,7 @@
   ansible.builtin.file:
     path: "{{ apt_keyrings }}"
     state: directory
-    mode: '755'
+    mode: "755"
 - name: Install gpg
   ansible.builtin.apt:
     pkg: gpg
@@ -35,6 +37,7 @@
   ansible.builtin.shell: set -o pipefail && wget -q -O - {{ gpg_key_src }} | gpg --dearmor > {{ local_apt_key }}
   args:
     creates: "{{ local_apt_key }}"
+    executable: /bin/bash
   environment: "{{ proxy_env }}"
 - name: Enable apt repository
   ansible.builtin.apt_repository:
@@ -60,5 +63,5 @@
   ansible.builtin.template:
     src: local-apt.list
     dest: /etc/apt/sources.list.d/{{ apt_source_list_name }}.disabled
-    mode: '644'
+    mode: "644"
   changed_when: false

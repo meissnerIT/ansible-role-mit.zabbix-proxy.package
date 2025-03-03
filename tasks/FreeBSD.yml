@@ -1,7 +1,9 @@
 ---
 # zabbix64-proxy from offical repos only supports MySQL:
 #
-#  30432:20240729:154101.802 [Z3001] connection to database '/var/db/zabbix/zabbix_proxy.db' failed: [2002] Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
+# 30432:20240729:154101.802 [Z3001] connection to database
+# '/var/db/zabbix/zabbix_proxy.db' failed:
+# [2002] Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
 #
 # For sqlite use own package at pkg.in.meissner.it!
 #
@@ -10,7 +12,8 @@
 
 # zabbix_server_pkg_name_prefix will be set in mit.zabbix-server.common
 
-- ansible.builtin.set_fact:
+- name: Set defaults
+  ansible.builtin.set_fact:
     zabbix_proxy_db_dir: /var/db/zabbix
     zabbix_proxy_conf_dir2: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}
     zabbix_proxy_confd_dir: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}/zabbix_proxy.conf.d
