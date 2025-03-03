@@ -5,18 +5,16 @@
 # '/var/db/zabbix/zabbix_proxy.db' failed:
 # [2002] Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
 #
-# For sqlite use own package at pkg.in.meissner.it!
+# For sqlite use own package at pkg.in.meissner.it
 #
 # Upgrade of sqlite database is not possible - just remove it
 # rm /var/db/zabbix/zabbix_proxy.db
 
-# zabbix_server_pkg_name_prefix will be set in mit.zabbix-server.common
-
 - name: Set defaults
   ansible.builtin.set_fact:
     zabbix_proxy_db_dir: /var/db/zabbix
-    zabbix_proxy_conf_dir2: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}
-    zabbix_proxy_confd_dir: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}/zabbix_proxy.conf.d
+    zabbix_proxy_conf_dir2: /usr/local/etc/zabbix
+    zabbix_proxy_confd_dir: /usr/local/etc/zabbix/zabbix_proxy.conf.d
     zabbix_proxy_conf_file: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}/zabbix_proxy.conf
     zabbix_proxy_service_name: zabbix_proxy
 
@@ -24,3 +22,17 @@
   ansible.builtin.package:
     name: "{{ zabbix_server_pkg_name_prefix }}-proxy"
   notify: Restart zabbix-proxy
+
+- name: Create {{ zabbix_proxy_confd_dir }} # noqa[name-template]
+  ansible.builtin.file:
+    path: "{{ zabbix_proxy_confd_dir }}"
+    state: directory
+    mode: "755"
+
+# Don't upgrade from upstream
+- name: Lock package
+  # We use `--show-locked` here as without it we will get an exit code 1 if
+  # the package is already locked.
+  ansible.builtin.command: pkg lock --yes --show-locked {{ zabbix_server_pkg_name_prefix }}-proxy
+  register: pkg_lock
+  changed_when: "'already locked' not in pkg_lock.stdout"
