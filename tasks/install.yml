@@ -20,7 +20,7 @@
     apt_source_list_name: local-{{ visible_name }}.list
     apt_repository: >
       deb [signed-by={{ local_apt_key }}]
-      https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/stable/debian {{ ansible_distribution_release }} main
+      https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main
     gpg_key_src: https://repo.zabbix.com/zabbix-official-repo.key
 
 # No need to change anything beyond this line
