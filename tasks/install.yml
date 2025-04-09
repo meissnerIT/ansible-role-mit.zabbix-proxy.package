@@ -1,27 +1,11 @@
 ---
-# mit-ansible-install-package-from-apt-source 2025-01-28
+# mit-ansible-install-package-from-apt-source 2025-04-01
 # 2023-10-12: Initial version
 # 2024-09-18: Cosmetic updates (ansible-lint)
 # 2024-09-19: Added handler "apt-package-has-been-changed"
 # 2025-01-11: Cosmetic updates (Removed ansible-lint warnings)
 # 2025-01-23: Added executable to "Add apt gpg key"
-
-- name: Set defaults
-  ansible.builtin.set_fact:
-    apt_keyrings: /etc/apt/keyrings
-    # used for filenames
-    visible_name: zabbix-official-repo
-- name: Set defaults
-  ansible.builtin.set_fact:
-    local_apt_key: "{{ apt_keyrings }}/{{ visible_name }}.gpg"
-- name: Set defaults
-  ansible.builtin.set_fact:
-    apt_package: zabbix-proxy-sqlite3=1:{{ zabbix_server_version }}{{ "+" + zabbix_distribution_release if (ansible_distribution=='Ubuntu') }}
-    apt_source_list_name: local-{{ visible_name }}.list
-    apt_repository: >
-      deb [signed-by={{ local_apt_key }}]
-      https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main
-    gpg_key_src: https://repo.zabbix.com/zabbix-official-repo.key
+# 2025-04-01: Removed all variables
 
 # No need to change anything beyond this line
 
