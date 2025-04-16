@@ -4,7 +4,10 @@
 
 - name: Set defaults
   ansible.builtin.set_fact:
-    zabbix_distribution_release: "{{ 'ubuntu' + ansible_lsb.release if (ansible_distribution == 'Ubuntu') else ansible_distribution_release }}"
+    # Debian 12: debian12
+    # Ubuntu 24: ubuntu24
+    # zabbix_distribution_release: "{{ 'ubuntu' + ansible_lsb.release if (ansible_distribution == 'Ubuntu') else ansible_distribution_release }}"
+    zabbix_distribution_release: "{{ ansible_distribution | lower + ansible_lsb.release }}"
     zabbix_server_major_version: "{{ zabbix_server_version | regex_replace('^([0-9]+\\.[0-9]+)(.*)$', '\\1') }}"
 - name: Set defaults
   ansible.builtin.set_fact:
@@ -21,5 +24,23 @@
     path: /usr/share/keyrings/zabbix-official-repo.gpg
     state: absent
 
+# install.yml
+- name: Set defaults
+  ansible.builtin.set_fact:
+    apt_keyrings: /etc/apt/keyrings
+    # used for filenames
+    visible_name: zabbix-official-repo
+- name: Set defaults
+  ansible.builtin.set_fact:
+    local_apt_key: "{{ apt_keyrings }}/{{ visible_name }}.gpg"
+- name: Set defaults
+  ansible.builtin.set_fact:
+    # 1:7.2.4-1+debian12
+    apt_package: zabbix-proxy-sqlite3=1:{{ zabbix_server_version }}{{ "+" + zabbix_distribution_release }}
+    apt_source_list_name: local-{{ visible_name }}.list
+    apt_repository: >
+      deb [signed-by={{ local_apt_key }}]
+      https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main
+    gpg_key_src: https://repo.zabbix.com/zabbix-official-repo.key
 - name: Include install.yml
   ansible.builtin.include_tasks: install.yml
