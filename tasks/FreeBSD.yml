@@ -18,9 +18,25 @@
     zabbix_proxy_conf_file: /usr/local/etc/{{ zabbix_server_pkg_name_prefix }}/zabbix_proxy.conf
     zabbix_proxy_service_name: zabbix_proxy
 
+# pkg install first updates any out of date repository catalogues, unless
+# REPO_AUTOUPDATE has been set to NO in pkg.conf.
+# - name: Update packages
+#   ansible.builtin.command: pkg update
+#   changed_when: false
+
+- name: Unlock package
+  # We ignore all errors as we will get an exit code 1 if the package is
+  # already locked and providing --show-locked doesn't have an effect here.
+  ansible.builtin.command: pkg unlock --yes {{ zabbix_server_pkg_name_prefix }}-proxy
+  failed_when: false
+  register: pkg_lock
+  changed_when: "'already unlocked' not in pkg_lock.stdout"
+
 - name: Install zabbix-proxy
-  ansible.builtin.package:
-    name: "{{ zabbix_server_pkg_name_prefix }}-proxy"
+  # Using command instead of package as we have to provide the repo
+  ansible.builtin.command: pkg install --repository meissner.IT --yes "{{ zabbix_server_pkg_name_prefix }}-proxy-{{ zabbix_server_version }}"
+  changed_when: "'The most recent versions of packages are already installed' not in pkg_install.stdout"
+  register: pkg_install
   notify: Restart zabbix-proxy
 
 - name: Create {{ zabbix_proxy_confd_dir }} # noqa[name-template]
