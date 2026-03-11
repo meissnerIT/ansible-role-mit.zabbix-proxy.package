@@ -42,5 +42,18 @@
       deb [signed-by={{ local_apt_key }}]
       https://repo.zabbix.com/zabbix/{{ zabbix_server_major_version }}/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main
     gpg_key_src: https://repo.zabbix.com/zabbix-official-repo.key
+
+- name: Hold zabbix-agent package
+  ansible.builtin.dpkg_selections:
+    name: zabbix-agent
+    selection: hold
+  changed_when: false
+
 - name: Include install.yml
   ansible.builtin.include_tasks: install.yml
+
+- name: Unhold zabbix-agent package
+  ansible.builtin.dpkg_selections:
+    name: zabbix-agent
+    selection: install
+  changed_when: false
