@@ -34,7 +34,7 @@
 
 - name: Install zabbix-proxy
   # Using command instead of package as we have to provide the repo
-  ansible.builtin.command: pkg install --repository meissner.IT --yes "{{ zabbix_server_pkg_name_prefix }}-proxy-{{ zabbix_server_version }}"
+  ansible.builtin.command: pkg install --repository {{ zabbix_proxy_repo_name }} --yes "{{ zabbix_server_pkg_name_prefix }}-proxy-{{ zabbix_server_version }}"
   changed_when: "'The most recent versions of packages are already installed' not in pkg_install.stdout"
   register: pkg_install
   notify: Restart zabbix-proxy
